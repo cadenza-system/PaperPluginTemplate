@@ -30,6 +30,23 @@ public class ActionBarManager {
     actionBars.add(new ActionBar(name, text, target));
   }
 
+  public static void create(@NotNull String name, @NotNull Text text) {
+    actionBars.add(new ActionBar(name, text));
+  }
+
+  public static void create(@NotNull String name, @NotNull String text) {
+    actionBars.add(new ActionBar(name, text));
+  }
+
+  public static void stop(String name) {
+    ActionBar actionBar = getActionBar(name);
+    if (actionBar == null) {
+      return;
+    }
+    actionBar.stop();
+    actionBars.remove(actionBar);
+  }
+
   public static void setText(String name, Text text) {
     ActionBar actionBar = getActionBar(name);
     if (actionBar == null) {
@@ -66,4 +83,6 @@ public class ActionBarManager {
     }
     return null;
   }
+
+
 }

@@ -5,36 +5,63 @@ import java.util.Set;
 import net.kunmc.lab.paperplugintemplate.Store;
 import net.kunmc.lab.paperplugintemplate.util.text.Text;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 class ActionBar {
 
-  private String name;
-  private Runnable runnable;
+  private final String name;
+  private final InnerRunnable runnable;
+  private Text text;
+  private Set<Player> targets = new HashSet<>();
+  private boolean isBroadcast;
 
   public ActionBar(String name, Text text, Set<Player> targets) {
     this.name = name;
-    this.runnable = new Runnable(text, targets);
+    this.text = text;
+    this.targets = targets;
+    this.runnable = new InnerRunnable(text, targets);
     this.run();
   }
 
   public ActionBar(String name, String text, Set<Player> targets) {
-    this.runnable = new Runnable(new Text(text), targets);
+    this.name = name;
+    this.text = new Text(text);
+    this.targets = targets;
+    this.runnable = new InnerRunnable(new Text(text), targets);
     this.run();
   }
 
   public ActionBar(String name, Text text, Player target) {
-    Set<Player> targets = new HashSet<>();
-    targets.add(target);
-    this.runnable = new Runnable(text, targets);
+    this.name = name;
+    this.text = text;
+    this.targets.add(target);
+    this.runnable = new InnerRunnable(text, targets);
     this.run();
   }
 
   public ActionBar(String name, String text, Player target) {
-    Set<Player> targets = new HashSet<>();
-    targets.add(target);
-    this.runnable = new Runnable(new Text(text), targets);
+    this.name = name;
+    this.text = new Text(text);
+    this.targets.add(target);
+    this.runnable = new InnerRunnable(new Text(text), targets);
+    this.run();
+  }
+
+  public ActionBar(String name, Text text) {
+    this.name = name;
+    this.text = text;
+    this.isBroadcast = true;
+    this.runnable = new InnerRunnable(text, targets);
+    this.run();
+  }
+
+  public ActionBar(String name, String text) {
+    this.name = name;
+    this.text = new Text(text);
+    this.isBroadcast = true;
+    this.runnable = new InnerRunnable(new Text(text), targets);
     this.run();
   }
 
@@ -47,48 +74,45 @@ class ActionBar {
   }
 
   public void addTarget(Player target) {
-    this.runnable.addTarget(target);
+    if (this.isBroadcast) {
+      return;
+    }
+    this.targets.add(target);
   }
 
   public void removeTarget(Player target) {
-    this.runnable.removeTarget(target);
+    if (this.isBroadcast) {
+      return;
+    }
+    this.targets.remove(target);
   }
 
   public void setText(Text text) {
-    this.runnable.setText(text);
+    this.text = text;
   }
 
   public void stop() {
     this.runnable.cancel();
   }
 
-  class Runnable extends BukkitRunnable {
+  private class InnerRunnable extends BukkitRunnable {
 
-    private Text text;
-    private final Set<Player> targets;
-
-    public Runnable(Text text, Set<Player> targets) {
-      this.text = text;
-      this.targets = targets;
-    }
-
-    public void addTarget(Player target) {
-      this.targets.add(target);
-    }
-
-    public void removeTarget(Player target) {
-      this.targets.remove(target);
-    }
-
-    public void setText(Text text) {
-      this.text = text;
+    public InnerRunnable(Text text, Set<Player> targets) {
+      ActionBar.this.text = text;
+      ActionBar.this.targets = targets;
     }
 
     @Override
     public void run() {
-      this.targets.forEach(player -> {
-        player.sendActionBar(Component.text(this.text.toString()));
-      });
+      if (ActionBar.this.isBroadcast) {
+        Bukkit.getOnlinePlayers().forEach(player -> {
+          player.sendActionBar(Component.text(ActionBar.this.text.toString()));
+        });
+      } else {
+        ActionBar.this.targets.forEach(player -> {
+          player.sendActionBar(Component.text(ActionBar.this.text.toString()));
+        });
+      }
     }
   }
 }
