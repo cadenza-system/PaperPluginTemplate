@@ -8,11 +8,12 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 class ActionBar {
 
   private final String name;
-  private final InnerRunnable runnable;
+  private BukkitTask runnable;
   private Text text;
   private Set<Player> targets = new HashSet<>();
   private boolean isBroadcast;
@@ -21,7 +22,6 @@ class ActionBar {
     this.name = name;
     this.text = text;
     this.targets = targets;
-    this.runnable = new InnerRunnable(text, targets);
     this.run();
   }
 
@@ -29,7 +29,6 @@ class ActionBar {
     this.name = name;
     this.text = new Text(text);
     this.targets = targets;
-    this.runnable = new InnerRunnable(new Text(text), targets);
     this.run();
   }
 
@@ -37,7 +36,6 @@ class ActionBar {
     this.name = name;
     this.text = text;
     this.targets.add(target);
-    this.runnable = new InnerRunnable(text, targets);
     this.run();
   }
 
@@ -45,7 +43,6 @@ class ActionBar {
     this.name = name;
     this.text = new Text(text);
     this.targets.add(target);
-    this.runnable = new InnerRunnable(new Text(text), targets);
     this.run();
   }
 
@@ -53,7 +50,6 @@ class ActionBar {
     this.name = name;
     this.text = text;
     this.isBroadcast = true;
-    this.runnable = new InnerRunnable(text, targets);
     this.run();
   }
 
@@ -61,12 +57,24 @@ class ActionBar {
     this.name = name;
     this.text = new Text(text);
     this.isBroadcast = true;
-    this.runnable = new InnerRunnable(new Text(text), targets);
     this.run();
   }
 
   private void run() {
-    this.runnable.runTaskTimerAsynchronously(Store.plugin, 0, 1);
+    this.runnable = new BukkitRunnable() {
+      @Override
+      public void run() {
+        if (ActionBar.this.isBroadcast) {
+          Bukkit.getOnlinePlayers().forEach(player -> {
+            player.sendActionBar(Component.text(ActionBar.this.text.toString()));
+          });
+        } else {
+          ActionBar.this.targets.forEach(player -> {
+            player.sendActionBar(Component.text(ActionBar.this.text.toString()));
+          });
+        }
+      }
+    }.runTaskTimerAsynchronously(Store.plugin, 0, 1);
   }
 
   public boolean matchedName(String name) {
@@ -93,26 +101,5 @@ class ActionBar {
 
   public void stop() {
     this.runnable.cancel();
-  }
-
-  private class InnerRunnable extends BukkitRunnable {
-
-    public InnerRunnable(Text text, Set<Player> targets) {
-      ActionBar.this.text = text;
-      ActionBar.this.targets = targets;
-    }
-
-    @Override
-    public void run() {
-      if (ActionBar.this.isBroadcast) {
-        Bukkit.getOnlinePlayers().forEach(player -> {
-          player.sendActionBar(Component.text(ActionBar.this.text.toString()));
-        });
-      } else {
-        ActionBar.this.targets.forEach(player -> {
-          player.sendActionBar(Component.text(ActionBar.this.text.toString()));
-        });
-      }
-    }
   }
 }
