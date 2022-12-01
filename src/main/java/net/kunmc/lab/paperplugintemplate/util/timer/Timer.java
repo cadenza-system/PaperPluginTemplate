@@ -5,28 +5,44 @@ import java.util.UUID;
 import net.kunmc.lab.paperplugintemplate.Store;
 import net.kunmc.lab.paperplugintemplate.util.acitonbar.ActionBarManager;
 import net.kunmc.lab.paperplugintemplate.util.bossbar.BroadcastBossBar;
+import net.kunmc.lab.paperplugintemplate.util.message.MessageUtil;
+import net.kunmc.lab.paperplugintemplate.util.sound.SoundUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 public class Timer {
 
   private final double limit;
   private String displayName;
   private DisplayType displayType;
-  private int countDown;
+  private int countDown = -1;
   private double currentTime;
   private Task task;
+  private TimerStatus status = TimerStatus.Waiting;
 
   private RegularProcess regularProcess;
   private EndProcess endProcess;
+  private boolean shouldPlayCountDownSound;
 
   public Timer(int limit) {
     this.limit = limit;
     this.currentTime = limit;
     this.displayType = DisplayType.NONE;
+  }
+
+  private TimerContext buildContext() {
+    return new TimerContext(
+        this.limit,
+        this.displayName,
+        this.displayType,
+        this.countDown,
+        this.currentTime
+    );
   }
 
   public Timer setDisplayName(String displayName) {
@@ -39,40 +55,49 @@ public class Timer {
     return this;
   }
 
-  public Timer setCountDown(int startValue) {
+  public Timer setCountDown(int startValue, boolean shouldPlaySound) {
     this.countDown = startValue;
+    this.shouldPlayCountDownSound = shouldPlaySound;
     return this;
   }
 
-  public Timer setRegularProcess(RegularProcess regularlyProcess) {
+  public Timer setRegularProcess(@NotNull RegularProcess regularlyProcess) {
     this.regularProcess = regularlyProcess;
     return this;
   }
 
-  public Timer setEndProcess(EndProcess endProcess) {
+  public Timer setEndProcess(@NotNull EndProcess endProcess) {
     this.endProcess = endProcess;
     return this;
   }
 
   public void start() {
+    this.status = TimerStatus.Running;
     this.task = new Task();
   }
 
   public void pause() {
     if (Objects.nonNull(this.task)) {
-      this.task.pause();
+      this.status = TimerStatus.Paused;
     }
   }
 
   public void resume() {
     if (Objects.nonNull(this.task)) {
-      this.task.resume();
+      this.status = TimerStatus.Running;
     }
+  }
+
+  public TimerStatus status() {
+    return this.status;
+  }
+
+  public void stop(boolean shouldExecuteEndProcess) {
+    this.task.stop(shouldExecuteEndProcess);
   }
 
   class Task extends BukkitRunnable {
 
-    private boolean isRunning = true;
     private String actionBarName;
     private BroadcastBossBar broadcastBossBar;
     private NamespacedKey bossBarKey;
@@ -84,11 +109,11 @@ public class Timer {
       }
 
       if (Timer.this.displayType == DisplayType.BOSSBAR) {
-        this.bossBarKey = Objects.requireNonNull(
-            NamespacedKey.fromString(UUID.randomUUID().toString()));
+        this.bossBarKey = new NamespacedKey(Store.plugin, UUID.randomUUID().toString());
         this.broadcastBossBar = new BroadcastBossBar(
             Bukkit.createBossBar(bossBarKey,
-                this.limitText(), BarColor.GREEN, BarStyle.SOLID));
+                TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime), BarColor.GREEN,
+                BarStyle.SOLID));
         this.broadcastBossBar.bossBar.setProgress(0);
         this.broadcastBossBar.bossBar.setVisible(true);
       }
@@ -96,34 +121,7 @@ public class Timer {
       this.runTaskTimerAsynchronously(Store.plugin, 0, 20);
     }
 
-    void pause() {
-      this.isRunning = false;
-    }
-
-    void resume() {
-      this.isRunning = true;
-    }
-
-    @Override
-    public void run() {
-      if (!this.isRunning) {
-        return;
-      }
-      showLimit();
-      if (Objects.nonNull(Timer.this.regularProcess)) {
-        if (Timer.this.regularProcess.execute()) {
-          this.cancel();
-        }
-      }
-
-      Timer.this.currentTime--;
-
-      if (Timer.this.currentTime >= 0) {
-        return;
-      }
-
-      // 終了時
-      showLimit();
+    void stop(boolean shouldExecuteEndProcess) {
       if (Timer.this.displayType == DisplayType.ACTIONBAR) {
         ActionBarManager.stop(this.actionBarName);
       }
@@ -133,29 +131,57 @@ public class Timer {
         Bukkit.removeBossBar(this.bossBarKey);
       }
 
-      if (Objects.nonNull(Timer.this.endProcess)) {
-        Timer.this.endProcess.execute();
+      if (shouldExecuteEndProcess && Objects.nonNull(Timer.this.endProcess)) {
+        Timer.this.endProcess.execute(Timer.this.buildContext());
       }
       this.cancel();
     }
 
-    private String limitText() {
-      String text = "";
-      if (Objects.nonNull(Timer.this.displayName)) {
-        text = Timer.this.displayName;
+    @Override
+    public void run() {
+      if (Timer.this.status != TimerStatus.Running) {
+        return;
       }
-      return text
-          .concat(" 残り ")
-          .concat(String.valueOf((int) Math.floor(Timer.this.currentTime)))
-          .concat("秒");
+      showLimit();
+      if (Objects.nonNull(Timer.this.regularProcess)) {
+        if (Timer.this.regularProcess.execute(Timer.this.buildContext())) {
+          this.cancel();
+        }
+      }
+
+      if (Timer.this.countDown >= Timer.this.currentTime) {
+        if (shouldPlayCountDownSound) {
+          SoundUtils.broadcastSound(Sound.BLOCK_STONE_BUTTON_CLICK_OFF, 1, 1);
+        }
+
+        MessageUtil.broadcastTitle(
+            String.valueOf((int) Math.floor(Timer.this.currentTime)),
+            "",
+            5,
+            10,
+            5
+        );
+      }
+      Timer.this.currentTime--;
+
+      if (Timer.this.currentTime >= 0) {
+        return;
+      }
+
+      // 終了時
+      showLimit();
+      this.stop(true);
+      Timer.this.status = TimerStatus.Finished;
     }
+
 
     private void showLimit() {
       if (Timer.this.displayType == DisplayType.ACTIONBAR) {
-        ActionBarManager.setText(this.actionBarName, this.limitText());
+        ActionBarManager.setText(this.actionBarName,
+            TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime));
       }
       if (Timer.this.displayType == DisplayType.BOSSBAR) {
-        double progressRate = this.progressRate();
+        double progressRate = TimerUtil.progressRate(Timer.this.currentTime, Timer.this.limit);
         if (progressRate > 0.5) {
           this.broadcastBossBar.bossBar.setColor(BarColor.GREEN);
         } else if (progressRate > 0.2) {
@@ -164,17 +190,11 @@ public class Timer {
           this.broadcastBossBar.bossBar.setColor(BarColor.RED);
         }
 
-        this.broadcastBossBar.bossBar.setTitle(this.limitText());
-        this.broadcastBossBar.bossBar.setProgress(this.progressRate());
+        this.broadcastBossBar.bossBar.setTitle(
+            TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime));
+        this.broadcastBossBar.bossBar.setProgress(
+            TimerUtil.progressRate(Timer.this.currentTime, Timer.this.limit));
       }
-    }
-
-    private double progressRate() {
-      double rate = Timer.this.currentTime / Timer.this.limit;
-      if (rate < 0) {
-        rate = 0;
-      }
-      return rate;
     }
   }
 }

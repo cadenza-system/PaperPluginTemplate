@@ -2,7 +2,7 @@ package net.kunmc.lab.paperplugintemplate.util.acitonbar;
 
 import java.util.ArrayList;
 import java.util.Set;
-import net.kunmc.lab.paperplugintemplate.util.text.Text;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,7 +10,7 @@ public class ActionBarManager {
 
   private static ArrayList<ActionBar> actionBars = new ArrayList<>();
 
-  public static void create(@NotNull String name, @NotNull Text text,
+  public static void create(@NotNull String name, @NotNull Component text,
       @NotNull Set<Player> targets) {
     actionBars.add(new ActionBar(name, text, targets));
   }
@@ -20,7 +20,7 @@ public class ActionBarManager {
     actionBars.add(new ActionBar(name, text, targets));
   }
 
-  public static void create(@NotNull String name, @NotNull Text text,
+  public static void create(@NotNull String name, @NotNull Component text,
       @NotNull Player target) {
     actionBars.add(new ActionBar(name, text, target));
   }
@@ -30,7 +30,7 @@ public class ActionBarManager {
     actionBars.add(new ActionBar(name, text, target));
   }
 
-  public static void create(@NotNull String name, @NotNull Text text) {
+  public static void create(@NotNull String name, @NotNull Component text) {
     actionBars.add(new ActionBar(name, text));
   }
 
@@ -47,7 +47,7 @@ public class ActionBarManager {
     actionBars.remove(actionBar);
   }
 
-  public static void setText(String name, Text text) {
+  public static void setText(String name, Component text) {
     ActionBar actionBar = getActionBar(name);
     if (actionBar == null) {
       return;
@@ -56,7 +56,7 @@ public class ActionBarManager {
   }
 
   public static void setText(String name, String text) {
-    setText(name, new Text(text));
+    setText(name, Component.text(text));
   }
 
   public static void addTarget(String name, Player target) {

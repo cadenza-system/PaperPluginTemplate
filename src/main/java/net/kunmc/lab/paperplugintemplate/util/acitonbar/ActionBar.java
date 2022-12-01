@@ -3,7 +3,6 @@ package net.kunmc.lab.paperplugintemplate.util.acitonbar;
 import java.util.HashSet;
 import java.util.Set;
 import net.kunmc.lab.paperplugintemplate.Store;
-import net.kunmc.lab.paperplugintemplate.util.text.Text;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -14,11 +13,11 @@ class ActionBar {
 
   private final String name;
   private BukkitTask runnable;
-  private Text text;
+  private Component text;
   private Set<Player> targets = new HashSet<>();
   private boolean isBroadcast;
 
-  public ActionBar(String name, Text text, Set<Player> targets) {
+  public ActionBar(String name, Component text, Set<Player> targets) {
     this.name = name;
     this.text = text;
     this.targets = targets;
@@ -27,12 +26,12 @@ class ActionBar {
 
   public ActionBar(String name, String text, Set<Player> targets) {
     this.name = name;
-    this.text = new Text(text);
+    this.text = Component.text(text);
     this.targets = targets;
     this.run();
   }
 
-  public ActionBar(String name, Text text, Player target) {
+  public ActionBar(String name, Component text, Player target) {
     this.name = name;
     this.text = text;
     this.targets.add(target);
@@ -41,12 +40,12 @@ class ActionBar {
 
   public ActionBar(String name, String text, Player target) {
     this.name = name;
-    this.text = new Text(text);
+    this.text = Component.text(text);
     this.targets.add(target);
     this.run();
   }
 
-  public ActionBar(String name, Text text) {
+  public ActionBar(String name, Component text) {
     this.name = name;
     this.text = text;
     this.isBroadcast = true;
@@ -55,7 +54,7 @@ class ActionBar {
 
   public ActionBar(String name, String text) {
     this.name = name;
-    this.text = new Text(text);
+    this.text = Component.text(text);
     this.isBroadcast = true;
     this.run();
   }
@@ -66,11 +65,11 @@ class ActionBar {
       public void run() {
         if (ActionBar.this.isBroadcast) {
           Bukkit.getOnlinePlayers().forEach(player -> {
-            player.sendActionBar(Component.text(ActionBar.this.text.toString()));
+            player.sendActionBar(ActionBar.this.text);
           });
         } else {
           ActionBar.this.targets.forEach(player -> {
-            player.sendActionBar(Component.text(ActionBar.this.text.toString()));
+            player.sendActionBar(ActionBar.this.text);
           });
         }
       }
@@ -95,7 +94,7 @@ class ActionBar {
     this.targets.remove(target);
   }
 
-  public void setText(Text text) {
+  public void setText(Component text) {
     this.text = text;
   }
 

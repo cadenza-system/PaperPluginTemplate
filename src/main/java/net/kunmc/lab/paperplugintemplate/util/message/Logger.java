@@ -1,7 +1,7 @@
 package net.kunmc.lab.paperplugintemplate.util.message;
 
 import net.kunmc.lab.paperplugintemplate.Store;
-import net.kunmc.lab.paperplugintemplate.util.text.Text;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 
 public class Logger {
@@ -15,8 +15,8 @@ public class Logger {
     MessageUtil.broadcast(msg);
   }
 
-  public static void debug(Text msg) {
-    debug(msg.toString());
+  public static void debug(TextComponent msg) {
+    debug(msg.content());
   }
 
   public static void debug(int msg) {
@@ -27,8 +27,8 @@ public class Logger {
     Bukkit.getLogger().info(header() + msg);
   }
 
-  public static void info(Text msg) {
-    info(msg);
+  public static void info(TextComponent msg) {
+    info(msg.content());
   }
 
   private static String header() {
