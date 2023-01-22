@@ -6,7 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class CommonUtil {
 
-  public static String getNameSpace(JavaPlugin plugin) {
-    return new NamespacedKey(plugin, UUID.randomUUID().toString()).getNamespace();
-  }
+    public static String getNameSpace(JavaPlugin plugin) {
+        return new NamespacedKey(plugin, UUID.randomUUID().toString()).getNamespace();
+    }
 }

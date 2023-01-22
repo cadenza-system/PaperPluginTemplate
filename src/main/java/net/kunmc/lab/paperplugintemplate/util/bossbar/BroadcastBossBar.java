@@ -10,23 +10,23 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class BroadcastBossBar implements Listener {
 
-  public BossBar bossBar;
+    public BossBar bossBar;
 
-  public BroadcastBossBar(BossBar bossBar) {
-    this.bossBar = bossBar;
-    Bukkit.getPluginManager().registerEvents(this, Store.plugin);
-    Bukkit.getOnlinePlayers().forEach(player -> {
-      this.bossBar.addPlayer(player);
-    });
-  }
+    public BroadcastBossBar(BossBar bossBar) {
+        this.bossBar = bossBar;
+        Bukkit.getPluginManager().registerEvents(this, Store.plugin);
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            this.bossBar.addPlayer(player);
+        });
+    }
 
-  @EventHandler(ignoreCancelled = true)
-  public void onPlayerJoin(PlayerJoinEvent event) {
-    this.bossBar.addPlayer(event.getPlayer());
-  }
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        this.bossBar.addPlayer(event.getPlayer());
+    }
 
-  @EventHandler(ignoreCancelled = true)
-  public void onPlayerQuit(PlayerQuitEvent event) {
-    this.bossBar.removePlayer(event.getPlayer());
-  }
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        this.bossBar.removePlayer(event.getPlayer());
+    }
 }

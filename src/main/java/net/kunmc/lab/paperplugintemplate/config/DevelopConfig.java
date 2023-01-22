@@ -5,12 +5,12 @@ import net.kunmc.lab.configlib.value.BooleanValue;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-public class Config extends BaseConfig {
-  
-  public final BooleanValue devMode = new BooleanValue(true);
+public class DevelopConfig extends BaseConfig {
 
-  public Config(@NotNull Plugin plugin) {
-    super(plugin);
-    super.loadConfig();
-  }
+    public final BooleanValue devMode = new BooleanValue(false);
+
+    public DevelopConfig(@NotNull Plugin plugin) {
+        super(plugin);
+        super.loadConfig();
+    }
 }
