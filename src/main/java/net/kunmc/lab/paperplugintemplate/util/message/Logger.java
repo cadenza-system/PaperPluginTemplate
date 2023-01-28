@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 public class Logger {
 
     public static void debug(String msg) {
-        if (!Store.developConfig.devMode.value()) {
+        if (!Store.developConfig.devMode.isTrue()) {
             return;
         }
         String out = header() + "[debug] " + msg;
