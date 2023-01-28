@@ -29,7 +29,7 @@ public class Timer {
     private EndProcess endProcess;
     private boolean shouldPlayCountDownSound;
 
-    public Timer(int limit) {
+    Timer(final double limit) {
         this.limit = limit;
         this.currentTime = limit;
         this.displayType = DisplayType.NONE;
@@ -45,54 +45,58 @@ public class Timer {
         );
     }
 
-    public Timer setDisplayName(String displayName) {
+    Timer setDisplayName(final String displayName) {
         this.displayName = displayName;
         return this;
     }
 
-    public Timer setDisplayType(DisplayType displayType) {
+    Timer setDisplayType(final DisplayType displayType) {
         this.displayType = displayType;
         return this;
     }
 
-    public Timer setCountDown(int startValue, boolean shouldPlaySound) {
+    Timer setCountDown(final int startValue, final boolean shouldPlaySound) {
         this.countDown = startValue;
         this.shouldPlayCountDownSound = shouldPlaySound;
         return this;
     }
 
-    public Timer setRegularProcess(@NotNull RegularProcess regularlyProcess) {
+    Timer setRegularProcess(@NotNull final RegularProcess regularlyProcess) {
         this.regularProcess = regularlyProcess;
         return this;
     }
 
-    public Timer setEndProcess(@NotNull EndProcess endProcess) {
+    String remainingTime() {
+        return TimerUtil.limitText("", this.currentTime);
+    }
+
+    Timer setEndProcess(@NotNull final EndProcess endProcess) {
         this.endProcess = endProcess;
         return this;
     }
 
-    public void start() {
+    void start() {
         this.status = TimerStatus.Running;
         this.task = new Task();
     }
 
-    public void pause() {
+    void pause() {
         if (Objects.nonNull(this.task)) {
             this.status = TimerStatus.Paused;
         }
     }
 
-    public void resume() {
+    void resume() {
         if (Objects.nonNull(this.task)) {
             this.status = TimerStatus.Running;
         }
     }
 
-    public TimerStatus status() {
+    TimerStatus status() {
         return this.status;
     }
 
-    public void stop(boolean shouldExecuteEndProcess) {
+    void stop(final boolean shouldExecuteEndProcess) {
         this.task.stop(shouldExecuteEndProcess);
     }
 
@@ -102,7 +106,7 @@ public class Timer {
         private BroadcastBossBar broadcastBossBar;
         private NamespacedKey bossBarKey;
 
-        public Task() {
+        Task() {
             if (Timer.this.displayType == DisplayType.ACTIONBAR) {
                 this.actionBarName = UUID.randomUUID().toString();
                 ActionBarManager.create(this.actionBarName, "");
@@ -122,7 +126,7 @@ public class Timer {
             this.runTaskTimerAsynchronously(Store.plugin, 0, 20);
         }
 
-        void stop(boolean shouldExecuteEndProcess) {
+        void stop(final boolean shouldExecuteEndProcess) {
             if (Timer.this.displayType == DisplayType.ACTIONBAR) {
                 ActionBarManager.stop(this.actionBarName);
             }
@@ -135,6 +139,7 @@ public class Timer {
             if (shouldExecuteEndProcess && Objects.nonNull(Timer.this.endProcess)) {
                 Timer.this.endProcess.execute(Timer.this.buildContext());
             }
+            Timer.this.status = TimerStatus.Finished;
             this.cancel();
         }
 
@@ -172,7 +177,7 @@ public class Timer {
             // 終了時
             showLimit();
             this.stop(true);
-            Timer.this.status = TimerStatus.Finished;
+
         }
 
 
@@ -182,7 +187,7 @@ public class Timer {
                     TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime));
             }
             if (Timer.this.displayType == DisplayType.BOSSBAR) {
-                double progressRate = TimerUtil.progressRate(Timer.this.currentTime,
+                final double progressRate = TimerUtil.progressRate(Timer.this.currentTime,
                     Timer.this.limit);
                 if (progressRate > 0.5) {
                     this.broadcastBossBar.bossBar.setColor(BarColor.GREEN);
