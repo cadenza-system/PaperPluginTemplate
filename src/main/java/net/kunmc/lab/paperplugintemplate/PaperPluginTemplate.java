@@ -12,6 +12,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class PaperPluginTemplate extends JavaPlugin {
 
+    private static PaperPluginTemplate INSTANCE;
+
+    public static PaperPluginTemplate getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public void onEnable() {
