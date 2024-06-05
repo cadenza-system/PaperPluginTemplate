@@ -30,16 +30,16 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT"
+    compileOnly "io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT"
     //compileOnly "com.sk89q.worldedit:worldedit-bukkit:latest.release"
     //compileOnly "com.sk89q.worldedit:worldedit-core:latest.release"
     //compileOnly "com.comphenix.protocol:ProtocolLib:latest.release"
-    //compileOnly name: "patched_1.16.5"
+    //compileOnly name: "patched_1.20.4"
     implementation 'com.github.TeamKun.CommandLib:bukkit:latest.release'
     implementation 'com.github.TeamKun.ConfigLib:bukkit:latest.release'
 }
 
-def targetJavaVersion = 8
+def targetJavaVersion = 17
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
@@ -107,7 +107,7 @@ task buildAndCopy(group: "build") {
 }
 
 task downloadServerJar {
-    URL url = new URL("https://papermc.io/api/v2/projects/paper/versions/1.16.5/builds/794/downloads/paper-1.16.5-794.jar")
+    URL url = new URL("https://papermc.io/api/v2/projects/paper/versions/1.20.4/builds/497/downloads/paper-1.20.4-497.jar")
     File file = new File(projectDir.toPath().toAbsolutePath().toString() + "/server/server.jar")
 
     if (!file.exists()) {
@@ -120,7 +120,7 @@ task downloadServerJar {
 task generatePatchedJar(group: "setup", dependsOn: downloadServerJar) {
     String serverDir = projectDir.toPath().toAbsolutePath().toString() + "/server"
 
-    File file = new File(serverDir + "/cache/patched_1.16.5.jar")
+    File file = new File(serverDir + "/cache/patched_1.20.4.jar")
     if (file.exists()) {
         return
     }
