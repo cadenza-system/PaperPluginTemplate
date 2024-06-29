@@ -37,11 +37,11 @@ public class Timer {
 
     private TimerContext buildContext() {
         return new TimerContext(
-                this.limit,
-                this.displayName,
-                this.displayType,
-                this.countDown,
-                this.currentTime);
+            this.limit,
+            this.displayName,
+            this.displayType,
+            this.countDown,
+            this.currentTime);
     }
 
     Timer setDisplayName(final String displayName) {
@@ -114,15 +114,15 @@ public class Timer {
             if (Timer.this.displayType == DisplayType.BOSSBAR) {
                 this.bossBarKey = new NamespacedKey(Store.plugin, UUID.randomUUID().toString());
                 this.broadcastBossBar = new BroadcastBossBar(
-                        Bukkit.createBossBar(bossBarKey,
-                                TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime),
-                                BarColor.GREEN,
-                                BarStyle.SOLID));
+                    Bukkit.createBossBar(bossBarKey,
+                        TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime),
+                        BarColor.GREEN,
+                        BarStyle.SOLID));
                 this.broadcastBossBar.bossBar.setProgress(0);
                 this.broadcastBossBar.bossBar.setVisible(true);
             }
 
-            this.runTaskTimerAsynchronously(Store.plugin, 0, 20);
+            this.runTaskTimer(Store.plugin, 0, 20);
         }
 
         void stop(final boolean shouldExecuteEndProcess) {
@@ -160,11 +160,11 @@ public class Timer {
                 }
 
                 MessageUtil.broadcastTitle(
-                        String.valueOf((int) Math.floor(Timer.this.currentTime)),
-                        "",
-                        5,
-                        10,
-                        5);
+                    String.valueOf((int) Math.floor(Timer.this.currentTime)),
+                    "",
+                    5,
+                    10,
+                    5);
             }
             Timer.this.currentTime--;
 
@@ -181,11 +181,11 @@ public class Timer {
         private void showLimit() {
             if (Timer.this.displayType == DisplayType.ACTIONBAR) {
                 ActionBarManager.setText(this.actionBarName,
-                        TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime));
+                    TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime));
             }
             if (Timer.this.displayType == DisplayType.BOSSBAR) {
                 final double progressRate = TimerUtil.progressRate(Timer.this.currentTime,
-                        Timer.this.limit);
+                    Timer.this.limit);
                 if (progressRate > 0.5) {
                     this.broadcastBossBar.bossBar.setColor(BarColor.GREEN);
                 } else if (progressRate > 0.2) {
@@ -195,9 +195,9 @@ public class Timer {
                 }
 
                 this.broadcastBossBar.bossBar.setTitle(
-                        TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime));
+                    TimerUtil.limitText(Timer.this.displayName, Timer.this.currentTime));
                 this.broadcastBossBar.bossBar.setProgress(
-                        TimerUtil.progressRate(Timer.this.currentTime, Timer.this.limit));
+                    TimerUtil.progressRate(Timer.this.currentTime, Timer.this.limit));
             }
         }
     }
