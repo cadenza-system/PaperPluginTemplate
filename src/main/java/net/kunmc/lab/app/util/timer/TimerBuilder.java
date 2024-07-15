@@ -1,6 +1,8 @@
 package net.kunmc.lab.app.util.timer;
 
+import java.util.Set;
 import java.util.UUID;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class TimerBuilder {
@@ -23,6 +25,18 @@ public class TimerBuilder {
 
     public TimerBuilder setCountDown(final int startValue, final boolean shouldPlaySound) {
         this.timer.setCountDown(startValue, shouldPlaySound);
+        return this;
+    }
+
+    public TimerBuilder addShowTarget(Player player) {
+        this.timer.addShowTarget(player);
+        return this;
+    }
+
+    public TimerBuilder addShowTargets(Set<Player> players) {
+        for (Player player : players) {
+            this.timer.addShowTarget(player);
+        }
         return this;
     }
 
