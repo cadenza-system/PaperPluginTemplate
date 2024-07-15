@@ -1,6 +1,8 @@
 package net.kunmc.lab.app.util.timer;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import net.kunmc.lab.app.Store;
 import net.kunmc.lab.app.util.acitonbar.ActionBarManager;
@@ -12,6 +14,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,6 +31,7 @@ public class Timer {
     private RegularProcess regularProcess;
     private EndProcess endProcess;
     private boolean shouldPlayCountDownSound;
+    private Set<Player> showTargets = new HashSet<>();
 
     Timer(final double limit) {
         this.limit = limit;
@@ -62,6 +66,11 @@ public class Timer {
 
     Timer setRegularProcess(@NotNull final RegularProcess regularlyProcess) {
         this.regularProcess = regularlyProcess;
+        return this;
+    }
+
+    Timer addShowTarget(Player player) {
+        this.showTargets.add(player);
         return this;
     }
 
@@ -108,7 +117,11 @@ public class Timer {
         Task() {
             if (Timer.this.displayType == DisplayType.ACTIONBAR) {
                 this.actionBarName = UUID.randomUUID().toString();
-                ActionBarManager.create(this.actionBarName, "");
+                if (showTargets.size() > 0) {
+                    ActionBarManager.create(this.actionBarName, "", showTargets);
+                } else {
+                    ActionBarManager.create(this.actionBarName, "");
+                }
             }
 
             if (Timer.this.displayType == DisplayType.BOSSBAR) {
@@ -159,12 +172,24 @@ public class Timer {
                     SoundUtils.broadcastSound(Sound.BLOCK_STONE_BUTTON_CLICK_OFF, 1, 1);
                 }
 
-                MessageUtil.broadcastTitle(
-                    String.valueOf((int) Math.floor(Timer.this.currentTime)),
-                    "",
-                    5,
-                    10,
-                    5);
+                if (showTargets.size() > 0) {
+                    for (Player target : showTargets) {
+                        target.sendTitle(
+                            String.valueOf((int) Math.floor(Timer.this.currentTime)),
+                            "",
+                            5,
+                            10,
+                            5);
+                    }
+                } else {
+                    MessageUtil.broadcastTitle(
+                        String.valueOf((int) Math.floor(Timer.this.currentTime)),
+                        "",
+                        5,
+                        10,
+                        5);
+                }
+
             }
             Timer.this.currentTime--;
 
