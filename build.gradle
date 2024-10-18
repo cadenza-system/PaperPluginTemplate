@@ -83,18 +83,35 @@ processResources {
     }
 }
 
-task copyToServer(group: "copy", type: Copy) {
+task copyToServer(group: "copy") {
     mustRunAfter build
-    from new File(buildDir.absolutePath, "libs/${rootProject.name}-${version}.jar")
-    into "./server/plugins"
-    rename { String fileName ->
-        fileName.replace("-${version}", "")
+
+    doLast {
+        copy {
+            from new File(buildDir.absolutePath, "libs/${rootProject.name}-${version}.jar")
+            into "./server/plugins"
+            rename { String fileName ->
+                fileName.replace("-${version}", "")
+            }
+        }
     }
 }
 
 task copyProtocolLibToServer(group: "copy", type: Copy) {
+    String fileNamePattern = ".*ProtocolLib.*.jar"
+
+    boolean exists = new File("server/plugins/").listFiles(new FilenameFilter() {
+        @Override
+        boolean accept(File dir, String name) {
+            return name.matches(fileNamePattern)
+        }
+    })
+    if (exists) {
+        return
+    }
+
     configurations.compileClasspath.getFiles().stream()
-            .filter(x -> x.getName().matches(".*ProtocolLib.*.jar"))
+            .filter(x -> x.getName().matches(fileNamePattern))
             .findFirst()
             .ifPresent(x -> {
                 from x
